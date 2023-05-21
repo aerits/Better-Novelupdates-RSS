@@ -12,6 +12,8 @@
 * About
 Better Novelupdates RSS (BNR) is a project to mark novels being followed on [[https://www.novelupdates.com]] from the rss feed. This is written in python, so in Emacs you can bind some keys to run it.
 
+NOTE: I am using Emacs Org mode to write this code inside of the readme, the readme is simultaneously an explanation of the code and the code.
+
 ** Dependencies
 You will need a version of Python 3 and the requests package and w3m installed to run this.
 
