@@ -1,0 +1,118 @@
+#+TITLE: Better Novelupdates RSS
+#+AUTHOR: aerits
+#+SETUPFILE: https://fniessen.github.io/org-html-themes/org/theme-readtheorg.setup
+
+:links:
+# https://www.pluralsight.com/guides/web-scraping-with-request-python
+# https://orgmode.org/worg/org-contrib/babel/intro.html#literate-programming
+# https://realpython.com/python-web-scraping-practical-introduction/
+# https://www.wouterspekkink.org/academia/writing/tool/doom-emacs/2021/02/27/writing-academic-papers-with-org-mode.html
+:end:
+
+* About
+Better Novelupdates RSS (BNR) is a project to mark novels being followed on [[https://www.novelupdates.com]] from the rss feed. This is written in python, so in Emacs you can bind some keys to run it.
+
+** Dependencies
+You will need a version of Python 3 and the requests package and w3m installed to run this.
+
+*** Pip installation
+Python3 can be installed from [[https://www.python.org]]. After that you can install requests with the following command:
+#+NAME: pip command to install the requests library
+#+BEGIN_SRC shell
+pip3 install requests
+  #+END_SRC
+
+*** Nix Installation
+If you use the Nix package manager or use Nix os, run =nix-shell= in the root directory of this repository to temporarily install python3 and the requests library. This will run the following code block:
+#+NAME: shell.nix
+ #+BEGIN_SRC nix :tangle ./shell.nix
+  { pkgs ? import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/eabc38219184cc3e04a974fe31857d8e0eac098d.tar.gz") {} }:
+
+  pkgs.mkShell {
+    packages = [
+      pkgs.python39
+      pkgs.python39Packages.requests
+    ];
+  }
+  #+END_SRC
+
+** Header
+*** Overview
+#+NAME: imports
+#+BEGIN_SRC python :noweb yes :tangle ./main.py
+  <<import-requests>>
+  <<import-urllib>>
+#+END_SRC
+*** Explanation
+BNR needs =requests=. =requests= is needed to send =POST= requests to [[https://www.novelupdates.com]].
+#+NAME: import-requests
+  #+BEGIN_SRC python
+  import requests
+#+END_SRC
+
+This is dummy code utilizing a =http GET= request using =requests=.
+#+BEGIN_SRC python :noweb yes :exports both
+  <<imports>>
+  url = 'https://jsonplaceholder.typicode.com/todos/1'
+  response = requests.get(url)        # To execute get request
+  print(response.status_code)     # To print http response code  
+  print(response.text)            # To print formatted JSON response
+
+
+  return str(response.status_code) + "\n" + response.text
+#+END_SRC
+
+#+RESULTS: imports
+: 200
+: {
+:   "userId": 1,
+:   "id": 1,
+:   "title": "delectus aut autem",
+:   "completed": false
+: }
+
+This is dummy code utilizing a =http POST= request using =requests=.
+#+BEGIN_SRC python :exports both :noweb yes
+  <<imports>>
+  data = {'title':'Python Requests','body':'Requests are awesome','userId':1} 
+  response = requests.post('https://jsonplaceholder.typicode.com/posts', data) 
+  print(response.status_code) 
+  print(response.text)
+  return str(response.status_code) + "\n" + response.text
+#+END_SRC
+
+#+RESULTS:
+: 201
+: {
+:   "title": "Python Requests",
+:   "body": "Requests are awesome",
+:   "userId": "1",
+:   "id": 101
+: }
+
+A noticable problem with this, however, is that novelupdates doesn't have an API to sent get requests to, so BNR also uses =urllib= to scrape the content from novelupdates. Wait. Novelupdates seems to block all bots. Nevermind.
+
+#+NAME: import-urllib
+#+BEGIN_SRC python
+  from urllib.request import urlopen
+#+END_SRC
+
+#+BEGIN_SRC python :noweb yes
+  <<imports>>
+  url = "https://www.novelupdates.com/extnu/7145351/"
+  # url = "https://orgmode.org/worg/org-contrib/babel/intro.html#literate-programming"
+  page = urlopen(url)
+  return page
+#+END_SRC
+
+#+RESULTS:
+
+novelupdates doesn't allow bots
+
+remove urllib later it is not needed
+
+I AM SMART; USE THE FOLLOWING SHELL COMMAND TO GET NOVELUPDATES HTML
+
+#+BEGIN_SRC shell :tangle ./downloadPage.sh
+w3m -dump_source $1 -o accept_encoding='*;q=0'
+#+END_SRC
