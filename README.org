@@ -25,9 +25,9 @@ pip3 install requests
   #+END_SRC
 
 *** Nix Installation
-If you use the Nix package manager or use Nix os, run =nix-shell= in the root directory of this repository to temporarily install python3 and the requests library. This will run the following code block:
+If you use the Nix package manager or use Nix os, run =nix-shell= in src/scripts in this repository to temporarily install python3 and the requests library. This will run the following code block:
 #+NAME: shell.nix
- #+BEGIN_SRC nix :tangle ./shell.nix
+ #+BEGIN_SRC nix :tangle ./src/scripts/shell.nix
   { pkgs ? import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/eabc38219184cc3e04a974fe31857d8e0eac098d.tar.gz") {} }:
 
   pkgs.mkShell {
@@ -41,9 +41,8 @@ If you use the Nix package manager or use Nix os, run =nix-shell= in the root di
 ** Header
 *** Overview
 #+NAME: imports
-#+BEGIN_SRC python :noweb yes :tangle ./main.py
+#+BEGIN_SRC python :noweb yes :tangle ./src/main.py
   <<import-requests>>
-  <<import-urllib>>
 #+END_SRC
 *** Explanation
 BNR needs =requests=. =requests= is needed to send =POST= requests to [[https://www.novelupdates.com]].
@@ -115,6 +114,6 @@ remove urllib later it is not needed
 
 I AM SMART; USE THE FOLLOWING SHELL COMMAND TO GET NOVELUPDATES HTML
 
-#+BEGIN_SRC shell :tangle ./downloadPage.sh
+#+BEGIN_SRC shell :tangle ./src/scripts/downloadPage.sh
 w3m -dump_source $1 -o accept_encoding='*;q=0'
 #+END_SRC
