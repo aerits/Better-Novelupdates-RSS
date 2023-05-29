@@ -4,5 +4,6 @@ pkgs.mkShell {
   packages = [
     pkgs.python39
     pkgs.python39Packages.requests
+    pkgs.w3m
   ];
 }

@@ -12,17 +12,19 @@
 * About
 Better Novelupdates RSS (BNR) is a project to mark novels being followed on [[https://www.novelupdates.com]] from the rss feed. This is written in python, so in Emacs you can bind some keys to run it.
 
-NOTE: I am using Emacs Org mode to write this code inside of the readme, the readme is simultaneously an explanation of the code and the code.
+NOTE: I am using Emacs Org mode to write this code inside of the readme, the readme is simultaneously an explanation of the code and the code. The purpose for this is to test out literate programming.
 
 ** Dependencies
 You will need a version of Python 3 and the requests package and w3m installed to run this.
 
 *** Pip installation
-Python3 can be installed from [[https://www.python.org]]. After that you can install requests with the following command:
+Python3 can be installed from [[https://www.python.org]] or from your distro's package manager. After that you can install requests with the following command:
 #+NAME: pip command to install the requests library
 #+BEGIN_SRC shell
 pip3 install requests
   #+END_SRC
+
+You can then download w3m from your package manager.
 
 *** Nix Installation
 If you use the Nix package manager or use Nix os, run =nix-shell= in src/scripts in this repository to temporarily install python3 and the requests library. This will run the following code block:
@@ -34,6 +36,7 @@ If you use the Nix package manager or use Nix os, run =nix-shell= in src/scripts
     packages = [
       pkgs.python39
       pkgs.python39Packages.requests
+      pkgs.w3m
     ];
   }
   #+END_SRC
@@ -43,9 +46,17 @@ If you use the Nix package manager or use Nix os, run =nix-shell= in src/scripts
 #+NAME: imports
 #+BEGIN_SRC python :noweb yes :tangle ./src/main.py
   <<import-requests>>
+  import subprocess
+  import os
 #+END_SRC
 *** Explanation
-BNR needs =requests=. =requests= is needed to send =POST= requests to [[https://www.novelupdates.com]].
+**** Get Requests
+BNR needs =requests=. =requests= is needed to send =GET= requests to [[https://www.novelupdates.com]].
+
+specifically novelupdates.com/readinglist_update.php?rid=<chapter id>&sid=<series id>&checked=yes
+
+we get the chapter id from the rss feed, and the series id from a later section
+
 #+NAME: import-requests
   #+BEGIN_SRC python
   import requests
@@ -91,6 +102,10 @@ This is dummy code utilizing a =http POST= request using =requests=.
 :   "id": 101
 : }
 
+**** Getting the Page
+
+***** IGNORE THIS SECTION
+
 A noticable problem with this, however, is that novelupdates doesn't have an API to sent get requests to, so BNR also uses =urllib= to scrape the content from novelupdates. Wait. Novelupdates seems to block all bots. Nevermind.
 
 #+NAME: import-urllib
@@ -112,8 +127,57 @@ novelupdates doesn't allow bots
 
 remove urllib later it is not needed
 
-I AM SMART; USE THE FOLLOWING SHELL COMMAND TO GET NOVELUPDATES HTML
+***** THIS IS THE ACTUAL SECTION
 
+# I AM SMART; USE THE FOLLOWING SHELL COMMAND TO GET NOVELUPDATES HTML this is very cool code
+
+This is a script that downloads the html of a web page
+
+#+NAME: page-downloader
 #+BEGIN_SRC shell :tangle ./src/scripts/downloadPage.sh
-w3m -dump_source $1 -o accept_encoding='*;q=0'
+  download_page () {
+      w3m -dump_source $1 -o accept_encoding='*;q=0'
+  }
 #+END_SRC
+
+#+RESULTS: page-downloader
+
+testing:
+
+#+BEGIN_SRC shell :noweb yes :tangle ./src/scripts/downloadPage.sh
+  <<page-downloader>>
+  download_page $1 | grep shortlink | cut -d"=" -f4
+#+END_SRC
+
+* Main Methods
+
+** Get Series Id
+
+In this method you just pass in a link and it just puts it into the page downloader script from before. For some reason the perms on a script gets reset when you do =org-babel-tangle= so we have to run chmod to fix downloadPage's perms so that it actually can be run.
+
+The series id is needed to be sent in a get request to novelupdates.com/readinglist_update.php?rid=<chapter id>&sid=<series id>&checked=yes
+
+^^^ Sending a get request here updates the reading list on novelupdates
+
+#+NAME: getSeriesId
+#+BEGIN_SRC python :tangle ./src/main.py :noweb yes
+  <<imports>>
+  os.system("chmod +x ./src/scripts/downloadPage.sh")
+  def getSeriesId(link):
+      seriesid = subprocess.check_output(['sh', './src/scripts/downloadPage.sh', link])
+      seriesid = str(seriesid).split('"')[1][:-6]
+      return seriesid
+#+END_SRC
+
+heere is some sample code
+
+#+BEGIN_SRC python :noweb yes
+  <<getSeriesId>>
+  e = getSeriesId("https://www.novelupdates.com/series/two-faced-princess/")
+  print(e)
+#+END_SRC
+
+** Get Latest Chapter
+
+This method is to get the latest chapter. This is done to mark the latest chapter on the novel as read when you are reading from the rss feed.
+
