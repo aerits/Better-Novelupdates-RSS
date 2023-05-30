@@ -48,6 +48,7 @@ If you use the Nix package manager or use Nix os, run =nix-shell= in src/scripts
   <<import-requests>>
   import subprocess
   import os
+  import sys
 #+END_SRC
 *** Explanation
 **** Get Requests
@@ -142,12 +143,29 @@ This is a script that downloads the html of a web page
 
 #+RESULTS: page-downloader
 
-testing:
+the first if is for getting the series id. its in bash because idk how to do this in python lol
+
+the second if is for getting the latest chapter
 
 #+BEGIN_SRC shell :noweb yes :tangle ./src/scripts/downloadPage.sh
   <<page-downloader>>
-  download_page $1 | grep shortlink | cut -d"=" -f4
+  if [ $2 -eq 0 ]
+  then
+      download_page $1 | grep shortlink | cut -d"=" -f4
+  elif [ $2 -eq 1 ]
+  then
+       download_page $1 | grep chp-release | head -n 2 | tail -n 1 | cut -d"/" -f5
+  else
+      echo "ENTER VALID COMMAND"
+  fi
 #+END_SRC
+
+#+BEGIN_SRC shell :noweb yes
+  sh ./src/scripts/downloadPage.sh https://www.novelupdates.com/series/isekai-tensei-soudouki/?pg=1#myTable 0
+#+END_SRC
+
+#+RESULTS:
+: 8365' />
 
 * Main Methods
 
@@ -164,20 +182,67 @@ The series id is needed to be sent in a get request to novelupdates.com/readingl
   <<imports>>
   os.system("chmod +x ./src/scripts/downloadPage.sh")
   def getSeriesId(link):
-      seriesid = subprocess.check_output(['sh', './src/scripts/downloadPage.sh', link])
+      seriesid = subprocess.check_output(['sh', './src/scripts/downloadPage.sh', link, '0'])
       seriesid = str(seriesid).split('"')[1][:-6]
       return seriesid
 #+END_SRC
 
 heere is some sample code
 
-#+BEGIN_SRC python :noweb yes
+#+BEGIN_SRC python :noweb yes :tangle ./src/main.py
   <<getSeriesId>>
   e = getSeriesId("https://www.novelupdates.com/series/two-faced-princess/")
   print(e)
 #+END_SRC
 
-** Get Latest Chapter
+#+RESULTS:
 
-This method is to get the latest chapter. This is done to mark the latest chapter on the novel as read when you are reading from the rss feed.
+** Mark Read
 
+this marks a specified chapter of a specified novel as read, you can either supply the chapter id or just let it mark the latest chapter as read.
+
+make sure to login into novelupdates on w3m
+
+#+NAME: mark-read
+#+BEGIN_SRC python :noweb yes :tangle ./src/main.py
+  <<imports>>
+  <<getSeriesId>>
+
+  def markRead(form, series, chapter):
+    seriesid = getSeriesId(series)
+    if(form>0):
+    # get latest chapter
+      chapter = subprocess.check_output(['sh', './src/scripts/downloadPage.sh', series, '1'])
+      return 1
+    url = "https://www.novelupdates.com/readinglist_update.php?rid="+chapter+"&sid="+seriesid+"&checked=yes"
+    # response = requests.get(url)
+    # print(response.status_code)
+    # print(response.text)
+    # print(url)
+    subprocess.call(['w3m', url, '-dump'])
+#+END_SRC
+
+test code
+
+#+BEGIN_SRC python
+  markRead(0, 'https://www.novelupdates.com/series/isekai-tensei-soudouki/', '6966111')
+#+END_SRC
+
+i have no idea what the test code is doing, i think i may have to use w3m for this?
+
+yeah i needed w3m
+
+* actual code
+
+#+BEGIN_SRC python :tangle ./src/main.py
+  if(sys.argv[2] == '0'):
+      markRead(1, sys.argv[1], 0)
+  else:
+      chapter = sys.argv[2].split("/")
+      # print(chapter[4])
+      markRead(0, sys.argv[1], chapter[4])
+#+END_SRC
+
+there are 2 parameters, the series link and the rss chapter link
+
+if the second parameter is a number less than 1 it just marks read the latest chapter
