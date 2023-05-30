@@ -3,39 +3,11 @@ import subprocess
 import os
 import sys
 
-import requests
-import subprocess
-import os
-import sys
-os.system("chmod +x ./src/scripts/downloadPage.sh")
+file_path = os.path.realpath(__file__)
+file_path = file_path[:-7]
+os.system("chmod +x "+file_path+"/scripts/downloadPage.sh")
 def getSeriesId(link):
-    seriesid = subprocess.check_output(['sh', './src/scripts/downloadPage.sh', link, '0'])
-    seriesid = str(seriesid).split('"')[1][:-6]
-    return seriesid
-
-import requests
-import subprocess
-import os
-import sys
-os.system("chmod +x ./src/scripts/downloadPage.sh")
-def getSeriesId(link):
-    seriesid = subprocess.check_output(['sh', './src/scripts/downloadPage.sh', link, '0'])
-    seriesid = str(seriesid).split('"')[1][:-6]
-    return seriesid
-e = getSeriesId("https://www.novelupdates.com/series/two-faced-princess/")
-print(e)
-
-import requests
-import subprocess
-import os
-import sys
-import requests
-import subprocess
-import os
-import sys
-os.system("chmod +x ./src/scripts/downloadPage.sh")
-def getSeriesId(link):
-    seriesid = subprocess.check_output(['sh', './src/scripts/downloadPage.sh', link, '0'])
+    seriesid = subprocess.check_output(['sh', file_path+'scripts/downloadPage.sh', link, '0'])
     seriesid = str(seriesid).split('"')[1][:-6]
     return seriesid
 

@@ -179,17 +179,18 @@ The series id is needed to be sent in a get request to novelupdates.com/readingl
 
 #+NAME: getSeriesId
 #+BEGIN_SRC python :tangle ./src/main.py :noweb yes
-  <<imports>>
-  os.system("chmod +x ./src/scripts/downloadPage.sh")
+  file_path = os.path.realpath(__file__)
+  file_path = file_path[:-7]
+  os.system("chmod +x "+file_path+"/scripts/downloadPage.sh")
   def getSeriesId(link):
-      seriesid = subprocess.check_output(['sh', './src/scripts/downloadPage.sh', link, '0'])
+      seriesid = subprocess.check_output(['sh', file_path+'scripts/downloadPage.sh', link, '0'])
       seriesid = str(seriesid).split('"')[1][:-6]
       return seriesid
 #+END_SRC
 
 heere is some sample code
 
-#+BEGIN_SRC python :noweb yes :tangle ./src/main.py
+#+BEGIN_SRC python :noweb yes
   <<getSeriesId>>
   e = getSeriesId("https://www.novelupdates.com/series/two-faced-princess/")
   print(e)
@@ -205,14 +206,11 @@ make sure to login into novelupdates on w3m
 
 #+NAME: mark-read
 #+BEGIN_SRC python :noweb yes :tangle ./src/main.py
-  <<imports>>
-  <<getSeriesId>>
-
   def markRead(form, series, chapter):
     seriesid = getSeriesId(series)
     if(form>0):
     # get latest chapter
-      chapter = subprocess.check_output(['sh', './src/scripts/downloadPage.sh', series, '1'])
+      chapter = subprocess.check_output(['sh', file_path+'/scripts/downloadPage.sh', series, '1'])
       return 1
     url = "https://www.novelupdates.com/readinglist_update.php?rid="+chapter+"&sid="+seriesid+"&checked=yes"
     # response = requests.get(url)
