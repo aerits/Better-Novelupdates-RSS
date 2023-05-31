@@ -19,7 +19,7 @@ BNR (better novelupdates rss) is useful if you follow novelupdates from an rss r
   python main.py https://www.novelupdates.com/series/ikemen-ni-tenseishita-kedo-cheat-ha-dekimasenseshita/ https://www.novelupdates.com/extnu/7175080/
 #+END_SRC
 
-You can create a script to run on your feed reader to automatically run this. Here is an example I wrote in elisp for the elfeed reader.
+You can create a script to run on your feed reader to automatically run this. Here is an example I wrote in elisp for the elfeed reader in Emacs.
 
 #+BEGIN_SRC elisp
 (defun nu-read ()
