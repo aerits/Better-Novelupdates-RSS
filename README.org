@@ -10,6 +10,9 @@ BNR (better novelupdates rss) is useful if you follow novelupdates from an rss r
 * Usage
 
 #+BEGIN_SRC shell
+  git clone https://github.com/aerits/Better-Novelupdates-RSS
+  cd better-novelupdates-rss/src
+
   python main.py [INSERT LINK TO NOVEL ON NOVELUPDATES] [INSERT LINK TO CHAPTER ON NOVELUDPATES]
 
   # example
