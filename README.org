@@ -1,246 +1,64 @@
 #+TITLE: Better Novelupdates RSS
 #+AUTHOR: aerits
-#+SETUPFILE: https://fniessen.github.io/org-html-themes/org/theme-readtheorg.setup
-
-:links:
-# https://www.pluralsight.com/guides/web-scraping-with-request-python
-# https://orgmode.org/worg/org-contrib/babel/intro.html#literate-programming
-# https://realpython.com/python-web-scraping-practical-introduction/
-# https://www.wouterspekkink.org/academia/writing/tool/doom-emacs/2021/02/27/writing-academic-papers-with-org-mode.html
-:end:
 
 * About
-Better Novelupdates RSS (BNR) is a project to mark novels being followed on [[https://www.novelupdates.com]] from the rss feed. This is written in python, so in Emacs you can bind some keys to run it.
 
-NOTE: I am using Emacs Org mode to write this code inside of the readme, the readme is simultaneously an explanation of the code and the code. The purpose for this is to test out literate programming.
+Better Novelupdates RSS is a command line script that allows you to mark chapters on NovelUpdates.com novels as read without going to the website. BNR (better novelupdates rss) is useful if you are reading from an rss reader and don't want to copy the novel title from the rss feed to go to the novel on novelupdates.
 
-** Dependencies
-You will need a version of Python 3 and the requests package and w3m installed to run this.
+* Usage
 
-*** Pip installation
-Python3 can be installed from [[https://www.python.org]] or from your distro's package manager. After that you can install requests with the following command:
-#+NAME: pip command to install the requests library
 #+BEGIN_SRC shell
-pip3 install requests
-  #+END_SRC
+  python main.py [INSERT LINK TO NOVEL ON NOVELUPDATES] [INSERT LINK TO CHAPTER ON NOVELUDPATES]
 
-You can then download w3m from your package manager.
-
-*** Nix Installation
-If you use the Nix package manager or use Nix os, run =nix-shell= in src/scripts in this repository to temporarily install python3 and the requests library. This will run the following code block:
-#+NAME: shell.nix
- #+BEGIN_SRC nix :tangle ./src/scripts/shell.nix
-  { pkgs ? import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/eabc38219184cc3e04a974fe31857d8e0eac098d.tar.gz") {} }:
-
-  pkgs.mkShell {
-    packages = [
-      pkgs.python39
-      pkgs.python39Packages.requests
-      pkgs.w3m
-    ];
-  }
-  #+END_SRC
-
-** Header
-*** Overview
-#+NAME: imports
-#+BEGIN_SRC python :noweb yes :tangle ./src/main.py
-  <<import-requests>>
-  import subprocess
-  import os
-  import sys
-#+END_SRC
-*** Explanation
-**** Get Requests
-BNR needs =requests=. =requests= is needed to send =GET= requests to [[https://www.novelupdates.com]].
-
-specifically novelupdates.com/readinglist_update.php?rid=<chapter id>&sid=<series id>&checked=yes
-
-we get the chapter id from the rss feed, and the series id from a later section
-
-#+NAME: import-requests
-  #+BEGIN_SRC python
-  import requests
+  # example
+  python main.py https://www.novelupdates.com/series/ikemen-ni-tenseishita-kedo-cheat-ha-dekimasenseshita/ https://www.novelupdates.com/extnu/7175080/
 #+END_SRC
 
-This is dummy code utilizing a =http GET= request using =requests=.
-#+BEGIN_SRC python :noweb yes :exports both
-  <<imports>>
-  url = 'https://jsonplaceholder.typicode.com/todos/1'
-  response = requests.get(url)        # To execute get request
-  print(response.status_code)     # To print http response code  
-  print(response.text)            # To print formatted JSON response
+You can create a script to run on your feed reader to automatically run this. Here is an example I wrote in elisp for the elfeed reader.
 
-
-  return str(response.status_code) + "\n" + response.text
+#+BEGIN_SRC elisp
+(defun nu-read ()
+  "mark novelupdates chapter as read
+  in the elfeed entry and navigate
+  to the chapter in eww"
+  (interactive)
+  (progn (re-search-forward "novelupdates.com/series")
+	 (setq series (thing-at-point 'url))
+	 ;; (message series)
+	 (re-search-backward "novelupdates.com/extnu")
+	 (setq chapter (thing-at-point 'url))
+	 ;; (message chapter)
+	 (message
+	  (shell-command-to-string (concat "python ~/Documents/git/better-novelupdates-rss/src/main.py "
+					   (concat series
+						   (concat " " chapter)))))
+	 (eww (thing-at-point 'url))))
+(defun nu-mark-read ()
+  "do the same thing as the last
+  function except without eww"
+  (interactive)
+  (progn (re-search-forward "novelupdates.com/series")
+	 (setq series (thing-at-point 'url))
+	 ;; (message series)
+	 (re-search-backward "novelupdates.com/extnu")
+	 (setq chapter (thing-at-point 'url))
+	 ;; (message chapter)
+	 (message
+	  (shell-command-to-string (concat "python ~/Documents/git/better-novelupdates-rss/src/main.py "
+					   (concat series
+						   (concat " " chapter)))))))
 #+END_SRC
 
-#+RESULTS: imports
-: 200
-: {
-:   "userId": 1,
-:   "id": 1,
-:   "title": "delectus aut autem",
-:   "completed": false
-: }
+* License
 
-This is dummy code utilizing a =http POST= request using =requests=.
-#+BEGIN_SRC python :exports both :noweb yes
-  <<imports>>
-  data = {'title':'Python Requests','body':'Requests are awesome','userId':1} 
-  response = requests.post('https://jsonplaceholder.typicode.com/posts', data) 
-  print(response.status_code) 
-  print(response.text)
-  return str(response.status_code) + "\n" + response.text
+#+BEGIN_SRC
+This is free and unencumbered software released into the public domain.
+
+Anyone is free to copy, modify, publish, use, compile, sell, or distribute this software, either in source code form or as a compiled binary, for any purpose, commercial or non-commercial, and by any means.
+
+In jurisdictions that recognize copyright laws, the author or authors of this software dedicate any and all copyright interest in the software to the public domain. We make this dedication for the benefit of the public at large and to the detriment of our heirs and successors. We intend this dedication to be an overt act of relinquishment in perpetuity of all present and future rights to this software under copyright law.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+For more information, please refer to <http://unlicense.org/>
 #+END_SRC
-
-#+RESULTS:
-: 201
-: {
-:   "title": "Python Requests",
-:   "body": "Requests are awesome",
-:   "userId": "1",
-:   "id": 101
-: }
-
-**** Getting the Page
-
-***** IGNORE THIS SECTION
-
-A noticable problem with this, however, is that novelupdates doesn't have an API to sent get requests to, so BNR also uses =urllib= to scrape the content from novelupdates. Wait. Novelupdates seems to block all bots. Nevermind.
-
-#+NAME: import-urllib
-#+BEGIN_SRC python
-  from urllib.request import urlopen
-#+END_SRC
-
-#+BEGIN_SRC python :noweb yes
-  <<imports>>
-  url = "https://www.novelupdates.com/extnu/7145351/"
-  # url = "https://orgmode.org/worg/org-contrib/babel/intro.html#literate-programming"
-  page = urlopen(url)
-  return page
-#+END_SRC
-
-#+RESULTS:
-
-novelupdates doesn't allow bots
-
-remove urllib later it is not needed
-
-***** THIS IS THE ACTUAL SECTION
-
-# I AM SMART; USE THE FOLLOWING SHELL COMMAND TO GET NOVELUPDATES HTML this is very cool code
-
-This is a script that downloads the html of a web page
-
-#+NAME: page-downloader
-#+BEGIN_SRC shell :tangle ./src/scripts/downloadPage.sh
-  download_page () {
-      w3m -dump_source $1 -o accept_encoding='*;q=0'
-  }
-#+END_SRC
-
-#+RESULTS: page-downloader
-
-the first if is for getting the series id. its in bash because idk how to do this in python lol
-
-the second if is for getting the latest chapter
-
-#+BEGIN_SRC shell :noweb yes :tangle ./src/scripts/downloadPage.sh
-  <<page-downloader>>
-  if [ $2 -eq 0 ]
-  then
-      download_page $1 | grep shortlink | cut -d"=" -f4
-  elif [ $2 -eq 1 ]
-  then
-       download_page $1 | grep chp-release | head -n 2 | tail -n 1 | cut -d"/" -f5
-  else
-      echo "ENTER VALID COMMAND"
-  fi
-#+END_SRC
-
-#+BEGIN_SRC shell :noweb yes
-  sh ./src/scripts/downloadPage.sh https://www.novelupdates.com/series/isekai-tensei-soudouki/?pg=1#myTable 0
-#+END_SRC
-
-#+RESULTS:
-: 8365' />
-
-* Main Methods
-
-** Get Series Id
-
-In this method you just pass in a link and it just puts it into the page downloader script from before. For some reason the perms on a script gets reset when you do =org-babel-tangle= so we have to run chmod to fix downloadPage's perms so that it actually can be run.
-
-The series id is needed to be sent in a get request to novelupdates.com/readinglist_update.php?rid=<chapter id>&sid=<series id>&checked=yes
-
-^^^ Sending a get request here updates the reading list on novelupdates
-
-#+NAME: getSeriesId
-#+BEGIN_SRC python :tangle ./src/main.py :noweb yes
-  file_path = os.path.realpath(__file__)
-  file_path = file_path[:-7]
-  os.system("chmod +x "+file_path+"/scripts/downloadPage.sh")
-  def getSeriesId(link):
-      seriesid = subprocess.check_output(['sh', file_path+'scripts/downloadPage.sh', link, '0'])
-      seriesid = str(seriesid).split('"')[1][:-6]
-      return seriesid
-#+END_SRC
-
-heere is some sample code
-
-#+BEGIN_SRC python :noweb yes
-  <<getSeriesId>>
-  e = getSeriesId("https://www.novelupdates.com/series/two-faced-princess/")
-  print(e)
-#+END_SRC
-
-#+RESULTS:
-
-** Mark Read
-
-this marks a specified chapter of a specified novel as read, you can either supply the chapter id or just let it mark the latest chapter as read.
-
-make sure to login into novelupdates on w3m
-
-#+NAME: mark-read
-#+BEGIN_SRC python :noweb yes :tangle ./src/main.py
-  def markRead(form, series, chapter):
-    seriesid = getSeriesId(series)
-    if(form>0):
-    # get latest chapter
-      chapter = subprocess.check_output(['sh', file_path+'/scripts/downloadPage.sh', series, '1'])
-      return 1
-    url = "https://www.novelupdates.com/readinglist_update.php?rid="+chapter+"&sid="+seriesid+"&checked=yes"
-    # response = requests.get(url)
-    # print(response.status_code)
-    # print(response.text)
-    # print(url)
-    subprocess.call(['w3m', url, '-dump'])
-#+END_SRC
-
-test code
-
-#+BEGIN_SRC python
-  markRead(0, 'https://www.novelupdates.com/series/isekai-tensei-soudouki/', '6966111')
-#+END_SRC
-
-i have no idea what the test code is doing, i think i may have to use w3m for this?
-
-yeah i needed w3m
-
-* actual code
-
-#+BEGIN_SRC python :tangle ./src/main.py
-  if(sys.argv[2] == '0'):
-      markRead(1, sys.argv[1], 0)
-  else:
-      chapter = sys.argv[2].split("/")
-      # print(chapter[4])
-      markRead(0, sys.argv[1], chapter[4])
-#+END_SRC
-
-there are 2 parameters, the series link and the rss chapter link
-
-if the second parameter is a number less than 1 it just marks read the latest chapter
