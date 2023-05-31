@@ -3,7 +3,9 @@
 
 * About
 
-Better Novelupdates RSS is a command line script that allows you to mark chapters on NovelUpdates.com novels as read without going to the website. BNR (better novelupdates rss) is useful if you are reading from an rss reader and don't want to copy the novel title from the rss feed to go to the novel on novelupdates.
+Better Novelupdates RSS is a command line script that allows you to mark chapters on novelupdates.com novels as read.
+
+BNR (better novelupdates rss) is useful if you follow novelupdates from an rss reader and don't want to navigate away from the rss feed to mark new chapters as read.
 
 * Usage
 
