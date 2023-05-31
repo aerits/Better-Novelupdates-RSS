@@ -7,11 +7,18 @@ Better Novelupdates RSS is a command line script that allows you to mark chapter
 
 BNR (better novelupdates rss) is useful if you follow novelupdates from an rss reader and don't want to navigate away from the rss feed to mark new chapters as read.
 
+* Dependencies
+
+BNR requires you to have w3m and python installed. w3m was the only way I could find that wasn't automatically blocked by novelupdates.com.
+
 * Usage
 
 #+BEGIN_SRC shell
   git clone https://github.com/aerits/Better-Novelupdates-RSS
   cd better-novelupdates-rss/src
+
+  # sign into novelupdates in w3m
+  w3m novelupdates.com
 
   python main.py [INSERT LINK TO NOVEL ON NOVELUPDATES] [INSERT LINK TO CHAPTER ON NOVELUDPATES]
 
