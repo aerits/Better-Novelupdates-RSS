@@ -1,6 +1,10 @@
 #+TITLE: Better Novelupdates RSS
 #+AUTHOR: aerits
 
+* Note
+
+This repo is unmaintained, I stopped using it. I'm pretty sure it broke a while ago.
+
 * About
 
 Better Novelupdates RSS is a command line script that allows you to mark chapters on novelupdates.com novels as read.
